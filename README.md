@@ -84,6 +84,13 @@ ps-mod-dev/
 
 详见 [`workspace/README.md`](workspace/README.md)。
 
+> ⚠️ **要分享模组源码时，请说明它基于本模板库构建。**
+> 你的模组工程**不含程序集引用** —— 那十几个引用（MelonLoader / Assembly-CSharp /
+> UnityEngine.* 等）由本库的 `Directory.Build.props` 提供。只发源码，别人一编译就会
+> 撞上 `PS002: MelonLoader 引用程序集不完整`。附上本库地址 + 基线提交即可让人复现构建。
+>
+> 可直接抄的出处说明模板见 [`workspace/README.md`](workspace/README.md#-要分享模组源码时务必说明它基于本模板库构建)。
+
 ### 如果 agent 没自动加载 skill
 
 skill 靠 `.agents/skills/ps-modding/SKILL.md` 被自动发现。若你的工具不支持，
