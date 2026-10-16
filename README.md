@@ -31,7 +31,7 @@
 ### 1. clone 下来，并让它成为你的工作区
 
 ```powershell
-git clone --depth 1 <本仓库地址> ps-mod-dev
+git clone --depth 1 https://github.com/MagicCrazyMan/probably-stolen-mod-dev-template ps-mod-dev
 ```
 
 然后用 DSH（或任何支持 `.agents/skills/` 的 agent 工具）**把 `ps-mod-dev` 目录作为工作区打开**。
@@ -100,21 +100,35 @@ New-Item -ItemType SymbolicLink `
 
 ## 不想要 git 历史
 
-`git clone` 会带上本库的全部提交记录。三种处理方式：
+本库已标记为 **GitHub Template Repository**，最干净的方式是用模板生成
+（得到全新仓库，只有一次初始提交，不含本库历史）：
 
 ```powershell
-# 推荐：浅克隆 —— 只要最新一次提交，之后还能 git pull 拿更新
-git clone --depth 1 <本仓库地址> ps-mod-dev
+gh repo create my-mod-dev --template MagicCrazyMan/probably-stolen-mod-dev-template --public --clone
+```
+
+其他方式：
+
+```powershell
+# 浅克隆 —— 只要最新一次提交，之后还能 git pull 拿更新
+git clone --depth 1 https://github.com/MagicCrazyMan/probably-stolen-mod-dev-template ps-mod-dev
 
 # 完全不要 git 历史
-git clone --depth 1 <本仓库地址> ps-mod-dev
+git clone --depth 1 https://github.com/MagicCrazyMan/probably-stolen-mod-dev-template ps-mod-dev
 Remove-Item ps-mod-dev\.git -Recurse -Force
 
 # 从 GitHub 直接下压缩包（连 git 都不需要）
-gh api repos/<owner>/<repo>/tarball/main | tar -xz
+gh api repos/MagicCrazyMan/probably-stolen-mod-dev-template/tarball/main | tar -xz
 ```
 
-**推荐第一种** —— 没有冗余历史，而且本库更新后你能 `git pull` 拿到新知识。
+**两种选择的取舍：**
+
+| | 用模板生成 | `git clone --depth 1` |
+|---|---|---|
+| git 历史 | ✅ 全新，只有初始提交 | ⚠️ 带本库最新一次提交 |
+| 以后拿本库更新 | ❌ 与上游无关联，需手动同步 | ✅ `git pull` 即可 |
+
+想跟着本库持续更新就用 clone，想要绝对干净的起点就用模板生成。
 
 ---
 
