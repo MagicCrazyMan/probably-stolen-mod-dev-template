@@ -1,0 +1,17 @@
+# 统一换行符，避免 Windows 上提交时出现
+# "CRLF will be replaced by LF" 之类的噪音警告。
+
+* text=auto eol=lf
+
+# PowerShell 脚本在 Windows 上用 CRLF 更稳妥
+*.ps1 text eol=crlf
+*.psm1 text eol=crlf
+
+# 二进制文件不做换行转换
+*.dll binary
+*.exe binary
+*.png binary
+*.jpg binary
+*.zip binary
+*.wav binary
+*.ogg binary

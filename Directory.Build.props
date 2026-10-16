@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Probably Stolen Mod 开发 —— 共享 MSBuild 设置
+  ================================================================
+  被 workspace/ 下所有模组工程自动继承（MSBuild 向上查找最近的
+  Directory.Build.props）。
+
+  ⚠️ 使用前先看 docs/IL2CPP-Mod-实战笔记.md —— 目标框架必须 net6.0，
+     因为当前路线是 MelonLoader + IL2CPP，不是官方文档说的 netstandard2.1。
+
+  游戏目录解析优先级：
+    1. 命令行传入的 $(GameDir)（build/deploy.ps1 会自动传）
+    2. 环境变量 GAME_DIR
+    3. 常见 Steam 库路径自动探测
+    4. 都失败 → 报 PS002，提示你改 DefaultGameDir
+-->
+<Project>
+
+  <PropertyGroup>
+    <!-- 手动指定游戏目录的兜底值。留空则走下面的自动探测。 -->
+    <DefaultGameDir Condition="'$(DefaultGameDir)' == ''"></DefaultGameDir>
+
+    <!-- MelonLoader 运行时是 net6，目标框架必须是 net6.0；它的 EOL 警告没有意义，统一抑制 -->
+    <NoWarn>$(NoWarn);NETSDK1138</NoWarn>
+
+    <GameDir Condition="'$(GameDir)' == '' AND '$(GAME_DIR)' != ''">$(GAME_DIR)</GameDir>
+    <GameDir Condition="'$(GameDir)' == '' AND '$(DefaultGameDir)' != ''">$(DefaultGameDir)</GameDir>
+
+    <!-- 自动探测：正式版优先于 Demo -->
+    <GameDir Condition="'$(GameDir)' == '' AND Exists('F:\SteamLibrary\steamapps\common\Probably Stolen')">F:\SteamLibrary\steamapps\common\Probably Stolen</GameDir>
+    <GameDir Condition="'$(GameDir)' == '' AND Exists('C:\Program Files (x86)\Steam\steamapps\common\Probably Stolen')">C:\Program Files (x86)\Steam\steamapps\common\Probably Stolen</GameDir>
+    <GameDir Condition="'$(GameDir)' == '' AND Exists('F:\SteamLibrary\steamapps\common\Probably Stolen Demo')">F:\SteamLibrary\steamapps\common\Probably Stolen Demo</GameDir>
+    <GameDir Condition="'$(GameDir)' == '' AND Exists('C:\Program Files (x86)\Steam\steamapps\common\Probably Stolen Demo')">C:\Program Files (x86)\Steam\steamapps\common\Probably Stolen Demo</GameDir>
+    <GameDir Condition="'$(GameDir)' == '' AND Exists('D:\SteamLibrary\steamapps\common\Probably Stolen Demo')">D:\SteamLibrary\steamapps\common\Probably Stolen Demo</GameDir>
+    <GameDir Condition="'$(GameDir)' == '' AND Exists('E:\SteamLibrary\steamapps\common\Probably Stolen Demo')">E:\SteamLibrary\steamapps\common\Probably Stolen Demo</GameDir>
+
+    <MelonDir>$(GameDir)\MelonLoader</MelonDir>
+    <MelonNet6Dir>$(MelonDir)\net6</MelonNet6Dir>
+    <Il2CppAsmDir>$(MelonDir)\Il2CppAssemblies</Il2CppAsmDir>
+  </PropertyGroup>
+
+  <!--
+    判据：MelonLoader 装好了 + 代理程序集已生成。
+    Il2CppAssemblies 只在**游戏成功启动过一次**之后才存在 —— 这是新手最常卡的地方。
+  -->
+  <PropertyGroup>
+    <_PsMelonLoader>$(MelonNet6Dir)\MelonLoader.dll</_PsMelonLoader>
+    <_PsHarmony>$(MelonNet6Dir)\0Harmony.dll</_PsHarmony>
+    <_PsInteropRuntime>$(MelonNet6Dir)\Il2CppInterop.Runtime.dll</_PsInteropRuntime>
+    <_PsGameAsm>$(Il2CppAsmDir)\Assembly-CSharp.dll</_PsGameAsm>
+
+    <MelonRefsReady>false</MelonRefsReady>
+    <MelonRefsReady Condition="Exists('$(_PsMelonLoader)') And Exists('$(_PsHarmony)') And Exists('$(_PsInteropRuntime)') And Exists('$(_PsGameAsm)')">true</MelonRefsReady>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(MelonRefsReady)' == 'true'">
+    <!-- 加载器与 Harmony：来自 MelonLoader\net6 -->
+    <Reference Include="MelonLoader"><HintPath>$(MelonNet6Dir)\MelonLoader.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="0Harmony"><HintPath>$(MelonNet6Dir)\0Harmony.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="Il2CppInterop.Runtime"><HintPath>$(MelonNet6Dir)\Il2CppInterop.Runtime.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="Il2CppInterop.Common"><HintPath>$(MelonNet6Dir)\Il2CppInterop.Common.dll</HintPath><Private>false</Private></Reference>
+
+    <!-- 游戏代理程序集：类型在 Il2Cpp 命名空间下，但文件名没有 Il2Cpp 前缀 -->
+    <Reference Include="Assembly-CSharp"><HintPath>$(Il2CppAsmDir)\Assembly-CSharp.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="Il2Cppmscorlib"><HintPath>$(Il2CppAsmDir)\Il2Cppmscorlib.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="UnityEngine"><HintPath>$(Il2CppAsmDir)\UnityEngine.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="UnityEngine.CoreModule"><HintPath>$(Il2CppAsmDir)\UnityEngine.CoreModule.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="UnityEngine.InputLegacyModule"><HintPath>$(Il2CppAsmDir)\UnityEngine.InputLegacyModule.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="UnityEngine.UIModule"><HintPath>$(Il2CppAsmDir)\UnityEngine.UIModule.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="UnityEngine.UI"><HintPath>$(Il2CppAsmDir)\UnityEngine.UI.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="Unity.TextMeshPro"><HintPath>$(Il2CppAsmDir)\Unity.TextMeshPro.dll</HintPath><Private>false</Private></Reference>
+  </ItemGroup>
+
+  <Target Name="PS_ValidateMelonRefs" BeforeTargets="ResolveReferences" Condition="'$(MelonRefsReady)' != 'true'">
+    <Error Code="PS002"
+           Text="MelonLoader 引用程序集不完整。期望存在：$(_PsMelonLoader) / $(_PsHarmony) / $(_PsInteropRuntime) / $(_PsGameAsm)。请依次确认：(1) MelonLoader 0.7.3 已解压到游戏目录；(2) **成功启动过一次游戏**（第一次会联网生成代理程序集，需几分钟）；(3) 游戏目录自动探测正确，否则用 -p:GameDir=&lt;路径&gt; 指定。详见 docs/从未开始到第一个模组.md" />
+  </Target>
+
+  <!-- 构建后自动部署到 <游戏>\Mods\ ：dotnet build -c Release -p:DeployToGame=true -->
+  <Target Name="PS_DeployToGame" AfterTargets="Build" Condition="'$(DeployToGame)' == 'true'">
+    <PropertyGroup>
+      <ModDeployDir>$(GameDir)\Mods</ModDeployDir>
+    </PropertyGroup>
+    <MakeDir Directories="$(ModDeployDir)" />
+    <!-- 路线 B：Mods\ 下直接就是 .dll，没有子文件夹、没有 manifest.xml -->
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(ModDeployDir)" />
+    <Message Importance="high" Text="[PS] 已部署 → $(ModDeployDir)\$(TargetFileName)" />
+  </Target>
+
+</Project>

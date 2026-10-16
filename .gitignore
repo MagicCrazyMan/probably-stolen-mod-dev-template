@@ -1,0 +1,58 @@
+# ⚠️ 本文件不支持行尾注释！
+# `foo/   # 说明` 会把注释算进模式里，整条规则静默失效。
+# 所有说明必须单独成行，或写在模式上方。
+
+# ══════════════════════════════════════════════════════════════
+#  核心约定：workspace/ 是你的模组工作区，里面的东西不进模板库
+# ══════════════════════════════════════════════════════════════
+#
+# 为什么：这样才能「clone 模板库拿知识，自己的 mod 代码不污染它」。
+# 你的 mod 源码放 workspace/src/<你的模组>/ 下，该目录已被忽略。
+# 想给 mod 单独建 git 仓库的话，在 workspace/src/<你的模组>/ 里
+# 自己 git init 即可，不会和模板库冲突。
+
+# 忽略 workspace 下的一切……
+/workspace/*
+# ……但保留这层目录本身，以及给新手的下一步说明
+!/workspace/.gitkeep
+!/workspace/README.md
+
+# ── .NET 构建产物 ─────────────────────────────────────
+bin/
+obj/
+*.user
+*.suo
+.vs/
+.idea/
+
+# ── 工具构建产物（tools/Inspect 的 bin/obj 由上面通用规则覆盖）──
+
+# ══════════════════════════════════════════════════════════════
+#  游戏程序集：版权原因，绝不入库
+# ══════════════════════════════════════════════════════════════
+# Assembly-CSharp.dll 等属于游戏代码。官方行为准则允许「看」（研究、
+# 找补丁目标），禁止再分发。详见 docs/ 里的说明。
+refs/
+Managed/
+GameAssembly.dll
+Il2CppAssemblies/
+
+# ── 反编译 / 逆向中间产物 ─────────────────────────────
+dummy_dlls/
+cpp2il_out/
+*.dummy.dll
+Assembly-CSharp-*.dll
+Assembly-CSharp.dll
+Assembly-CSharp-firstpass.dll
+Il2Cppmscorlib.dll
+GameAssembly.dll
+global-metadata.dat
+
+# ── 发布包（zip 不入库，使用者说明入库）───────────────
+dist/*.zip
+*.nupkg
+
+# ── 编辑器 / 系统 ─────────────────────────────────────
+Thumbs.db
+desktop.ini
+.DS_Store

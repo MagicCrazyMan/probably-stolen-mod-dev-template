@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    开发期工具：反射查看游戏代理程序集里的真实类型/成员。
+    这个工具 **不发布、不入库**（见 .gitignore 的 Modding/tools）。
+    目标框架 net6.0，与 MelonLoader 一致。
+  -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net6.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <AssemblyName>Inspect</AssemblyName>
+    <RootNamespace>PsInspect</RootNamespace>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <NoWarn>$(NoWarn);NETSDK1138</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- 代理程序集只用于反射，不参与编译引用 -->
+    <Reference Include="Assembly-CSharp"><HintPath>$(Il2CppAsmDir)\Assembly-CSharp.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="Il2Cppmscorlib"><HintPath>$(Il2CppAsmDir)\Il2Cppmscorlib.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="UnityEngine"><HintPath>$(Il2CppAsmDir)\UnityEngine.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="UnityEngine.CoreModule"><HintPath>$(Il2CppAsmDir)\UnityEngine.CoreModule.dll</HintPath><Private>false</Private></Reference>
+  </ItemGroup>
+
+  <!--
+    不要把这个工具复制进游戏的 Il2CppAssemblies\！
+    之前那么做导致：游戏运行时锁住 Inspect.dll，构建直接失败（MSB3027）。
+    改为就地运行，靠环境变量 PS_GAME_ASM_DIR 指到代理程序集目录即可：
+      $env:PS_GAME_ASM_DIR = "$game\MelonLoader\Il2CppAssemblies"
+      dotnet Modding\tools\Inspect\bin\Release\net6.0\Inspect.dll show PlayerStore
+  -->
+
+</Project>
