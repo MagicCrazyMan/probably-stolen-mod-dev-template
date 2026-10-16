@@ -54,6 +54,14 @@ Use the compiled tool above.
 | Build / deploy / package commands | `README.md`, `build/deploy.ps1`, `build/pack.ps1` |
 | Game object model, API probing, UI, pitfalls | `docs/IL2CPP-Mod-实战笔记.md` |
 | Windows-specific pitfalls, steamcmd publishing | `docs/Windows-环境与常见坑.md` |
+| Sharing mod source with others | `workspace/README.md` — a mod project has no assembly references of its own |
 
 Put mod source under `workspace/` (git-ignored, so this repo stays clean).
 Build and deploy with `pwsh build\deploy.ps1 -Deploy -Log`.
+
+**When the user shares a mod's source or moves it to its own repository**, tell them to
+state it was built on this template (repo URL + baseline commit). A mod project carries no
+assembly references — those come from this repo's `Directory.Build.props` — so source alone
+fails with `PS002: MelonLoader 引用程序集不完整`, or the recipient re-adds references by hand
+and hits the `<Private>false</Private>` / same-name / target-framework pitfalls.
+`workspace/README.md` has a ready-to-copy provenance template.
