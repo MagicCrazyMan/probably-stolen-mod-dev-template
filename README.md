@@ -64,7 +64,7 @@ ps-mod-dev/
 ├── docs/
 │   ├── 从未开始到第一个模组.md             ★ 新手从这里开始（含成功判据）
 │   ├── IL2CPP-Mod-实战笔记.md              ★★ 最有价值：对象模型 / API 探测 / UI / 踩坑
-│   └── Windows-环境清单.md                 环境说明（部分内容已被实测修正）
+│   └── Windows-环境与常见坑.md            Windows 特有问题（写保护/空格路径/steamcmd）
 ├── tools/Inspect/                        API 探测工具（反射读游戏代理程序集）
 ├── build/
 │   ├── deploy.ps1                        探测游戏 → 编译 → 部署 → 看日志

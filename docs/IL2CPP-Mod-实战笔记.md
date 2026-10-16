@@ -1,6 +1,6 @@
 # 《深空当铺：可能是偷的》IL2CPP Mod 实战笔记
 
-> 编写日期：2026-10-17　　作者：DSH 协作会话（MagicCrazyMan）
+> 最后更新：2026-10-17
 > 适用对象：**接手这个仓库的下一个人**，或几个月后忘了细节的自己。
 > 内容全部来自本机实测，不是文档抄录。凡标注「实测」的都有日志或命令输出为证。
 
@@ -11,13 +11,13 @@
 
 配套阅读：
 - [`从未开始到第一个模组.md`](从未开始到第一个模组.md) —— 按步骤做的入门流程
-- [`Windows-环境清单.md`](Windows-环境清单.md) —— ⚠️ 部分内容已过时，见本文第 1 节
+- [`Windows-环境与常见坑.md`](Windows-环境与常见坑.md) —— Windows 特有问题（写保护、空格路径、steamcmd）
 
 ---
 
 ## 目录
 
-1. [环境实录（2026-10-17）](#1-环境实录2026-10-17)
+1. [环境与前提](#1-环境与前提)
 2. [关键路线修正：Demo 到底是什么](#2-关键路线修正demo-到底是什么)
 3. [游戏架构：窗口 / 背包 / 元素图](#3-游戏架构窗口--背包--元素图)
 4. [API 探测方法论](#4-api-探测方法论)
@@ -28,40 +28,37 @@
 
 ---
 
-## 1. 环境实录（2026-10-17）
+## 1. 环境与前提
 
-### 1.1 实际在用的版本
+### 1.1 路线与版本
 
-| 项 | 实测值 |
+| 项 | 值 |
 |---|---|
-| OS | Windows 11 |
-| .NET SDK | **10.0.402**（`C:\Program Files\dotnet\sdk`） |
-| 游戏 | `F:\SteamLibrary\steamapps\common\Probably Stolen Demo`，895 MB |
 | 游戏版本 | **0.46D**（存档内标记 `VERSION 049-Rev5-L`） |
-| 引擎 | Unity **2021.3.45f2**，**IL2CPP** |
-| MelonLoader | **0.7.3 Open-Beta**（`version.dll` 注入 + `MelonLoader\`） |
-| 代理程序集 | `MelonLoader\Il2CppAssemblies\`，138 个 DLL |
-| 生成工具链 | Cpp2IL 2022.1.0-pre-release.21 + Il2CppInterop 1.5.1-ci.845 |
+| 游戏路径 | `<你的 SteamLibrary>\steamapps\common\Probably Stolen Demo` |
+| 引擎 | Unity **2021.3.45f2**，**IL2CPP**（有 `GameAssembly.dll`，无 `_Data\Managed\`） |
+| MelonLoader | **0.7.3**（`version.dll` 注入 + `MelonLoader\` 目录） |
+| 代理程序集 | `MelonLoader\Il2CppAssemblies\`（约 138 个 DLL，**首次启动游戏后**生成） |
+| 生成工具链 | Cpp2IL + Il2CppInterop（MelonLoader 自动下载，版本随其发布走） |
 | **Mod 目标框架** | **`net6.0`**（不是官方文档说的 `netstandard2.1`） |
+| .NET SDK | **10.x** —— `dotnet --list-sdks` 要能列出；**只有运行时是不够的** |
 | Harmony | **HarmonyX 2.10.2**（MelonLoader 自带 `net6\0Harmony.dll`） |
-| 显示器 / 分辨率 | 3840×2160 物理，游戏内 1920×1080 渲染 |
 
-### 1.2 与旧文档的差异（重要）
+> 这些值会随游戏与 MelonLoader 更新而变化。**判断依据不是版本号，而是特征**：
+> 有没有 `_Data\Managed\`（有 → Mono / 路线 A；无且只有 `GameAssembly.dll` → IL2CPP / 路线 B）。
+> MelonLoader 的启动日志里也会写明 `Game Type: Il2cpp`、`Unity Version`、`Game Version`。
 
-[`Windows-环境清单.md`](Windows-环境清单.md) 说「装 .NET SDK 10 + Steam + 游戏，2 个软件就能开工」。实测有三处不符：
+### 1.2 两个容易忽略的前提
 
-| 旧文档说法 | 实测 |
-|---|---|
-| 需装 .NET SDK | ✅ 对。但**只装了运行时是不够的** —— `dotnet --list-sdks` 必须能列出 10.0.x |
-| VS 2022 可以编译 C# | ❌ **不行**。本机 VS 2022 Community 17.14.40 只装了 C++ 工作负载：`MSBuild.exe` 在，但 `Roslyn\csc.exe` 不存在、`SdkResolvers` 里没有 `Microsoft.DotNet.MSBuildSdkResolver`。**命令行 SDK 才是唯一能编译 C# 的途径** |
-| 游戏在 `Program Files` 受写保护是个坑 | ⚠️ 本机游戏装在 `F:\SteamLibrary`，无此问题 |
+**① Visual Studio 不能代替命令行 SDK。**
+只装 VS 的 C++ 工作负载时，`MSBuild.exe` 在、但 `Roslyn\csc.exe` 不在，
+`SdkResolvers` 里也没有 `Microsoft.DotNet.MSBuildSdkResolver` —— **编译不了 C#**。
+`dotnet` CLI 才是唯一途径。
 
-### 1.3 一个容易忽略的限制：沙箱
-
-DSH 会话的文件沙箱默认只允许写工作区。这影响两件事：
-
-- `dotnet build` 往游戏目录写 `bin\obj` → 被拒（所以工程放工作区、游戏目录只用来读引用）
-- 「构建后自动部署到游戏 `Mods\`」这种后置事件 → 被拒（要么切 full access，要么手动拷）
+**② 沙箱/权限限制会影响构建流程。**
+若你的 agent 工具或终端限制了工作目录外的写入，两件事会失败：
+`dotnet build` 往游戏目录写 `bin\obj`，以及「构建后自动部署到游戏 `Mods\`」。
+把工程放在可写目录、游戏目录只用来读引用即可绕开。
 
 ---
 
@@ -618,7 +615,8 @@ MelonLoader 的 `OnInitializeMelon` 跑在**主菜单阶段**，游戏玩法系�
 dotnet --list-sdks
 
 # 2) 确认游戏与 MelonLoader
-$game = "F:\SteamLibrary\steamapps\common\Probably Stolen Demo"
+$game = "<你的 SteamLibrary>\steamapps\common\Probably Stolen Demo"
+#  （build\deploy.ps1 会自动探测游戏目录，一般不用手填）
 Test-Path "$game\version.dll"                              # MelonLoader 引导器
 Test-Path "$game\MelonLoader\Il2CppAssemblies\Assembly-CSharp.dll"   # 代理程序集
 ```
@@ -738,7 +736,7 @@ My First Mod v1.0.0
 
 ```powershell
 # 游戏目录
-$game = "F:\SteamLibrary\steamapps\common\Probably Stolen Demo"
+$game = "<你的 SteamLibrary>\steamapps\common\Probably Stolen Demo"
 
 # 构建 + 部署 + 看日志
 pwsh build\deploy.ps1 -Deploy -Log

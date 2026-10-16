@@ -26,7 +26,13 @@
     <GameDir Condition="'$(GameDir)' == '' AND '$(GAME_DIR)' != ''">$(GAME_DIR)</GameDir>
     <GameDir Condition="'$(GameDir)' == '' AND '$(DefaultGameDir)' != ''">$(DefaultGameDir)</GameDir>
 
-    <!-- 自动探测：正式版优先于 Demo -->
+    <!--
+      自动探测：正式版优先于 Demo。
+      这里只列了几个常见位置。**如果游戏在别的盘/别的库**，两种办法：
+        ① 设环境变量 GAME_DIR，或构建时 -p:GameDir=<路径>
+        ② 在下面加一行，照抄格式改盘符和库名即可
+      （build/deploy.ps1 与 tools/inspect.ps1 会遍历盘符自动找，手工构建时才需要这里）
+    -->
     <GameDir Condition="'$(GameDir)' == '' AND Exists('F:\SteamLibrary\steamapps\common\Probably Stolen')">F:\SteamLibrary\steamapps\common\Probably Stolen</GameDir>
     <GameDir Condition="'$(GameDir)' == '' AND Exists('C:\Program Files (x86)\Steam\steamapps\common\Probably Stolen')">C:\Program Files (x86)\Steam\steamapps\common\Probably Stolen</GameDir>
     <GameDir Condition="'$(GameDir)' == '' AND Exists('F:\SteamLibrary\steamapps\common\Probably Stolen Demo')">F:\SteamLibrary\steamapps\common\Probably Stolen Demo</GameDir>

@@ -53,7 +53,7 @@ Use the compiled tool above.
 | First mod, step by step | `docs/从未开始到第一个模组.md` |
 | Build / deploy / package commands | `README.md`, `build/deploy.ps1`, `build/pack.ps1` |
 | Game object model, API probing, UI, pitfalls | `docs/IL2CPP-Mod-实战笔记.md` |
-| Windows toolchain notes (partly superseded) | `docs/Windows-环境清单.md` |
+| Windows-specific pitfalls, steamcmd publishing | `docs/Windows-环境与常见坑.md` |
 
 Put mod source under `workspace/` (git-ignored, so this repo stays clean).
 Build and deploy with `pwsh build\deploy.ps1 -Deploy -Log`.
