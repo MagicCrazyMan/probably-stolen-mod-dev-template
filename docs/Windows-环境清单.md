@@ -235,7 +235,7 @@ cd HelloMod
 
 ### 代码与 manifest.xml
 
-完整可抄的最小示例见 [`Probably-Stolen-Mod-开发调研.md`](Probably-Stolen-Mod-开发调研.md) **附录 A**。
+完整可抄的最小示例见 [`从未开始到第一个模组.md`](从未开始到第一个模组.md) 第 5 节。
 
 ⚠️ 两个最容易忘的点：
 - `manifest.xml` **必须**和 DLL 放在一起，否则游戏直接跳过整个文件夹
@@ -336,7 +336,7 @@ C:\steamcmd\steamcmd.exe +login <你的Steam账号> +workshop_build_item "C:\pat
 - 首次上传需在 Steam 网站接受一次创意工坊法律协议
 - ⚠️ **不要把 Steam 密码或令牌写进脚本、提交到仓库**
 
-`.vdf` 文件内容见 [`Probably-Stolen-Mod-开发调研.md`](Probably-Stolen-Mod-开发调研.md) 第 3.11 节。
+`.vdf` 的字段含义：`appid` 填游戏 AppID，`publishedfileid` 首次填 `0`，`contentfolder` 指向模组文件夹，`previewfile` 指向预览图。
 
 ---
 
